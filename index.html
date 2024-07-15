@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <div id="app">
+
+        <p>Address: {{ address }}</p>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    address: 'Hello Vue!'
+                }
+            },
+            mounted() {
+                navigator.geolocation.getCurrentPosition(
+                    this.getCoordinates,
+                    this.showError,
+                    { maximumAge: 10000, timeout: 10000, enableHighAccuracy: true }
+                )
+            },
+            methods: {
+                getCoordinates(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const acc = Math.round(position.coords.accuracy);
+
+                    console.log(lat, lng, acc)
+                    this.address = `${lat}, ${lng}, ${acc}`
+                },
+                showError(error) {
+                    // switch (error.code) {
+                    //     case error.PERMISSION_DENIED:
+                    //         this.error = "用户拒绝了获取位置信息的请求。";
+                    //         break;
+                    //     case error.POSITION_UNAVAILABLE:
+                    //         this.error = "位置信息不可用。";
+                    //         break;
+                    //     case error.TIMEOUT:
+                    //         this.error = "获取位置信息超时。";
+                    //         break;
+                    //     case error.UNKNOWN_ERROR:
+                    //         this.error = "发生未知错误。";
+                    //         break;
+                    // }
+                }
+            }
+        }).mount('#app')
+    </script>
+
+</body>
+
+</html>
