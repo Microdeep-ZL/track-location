@@ -36,8 +36,10 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(result)
-                    }).finally(() => {
+                    }).then(() => {
                         window.location.replace(this.target)
+                    }).catch((error)=>{
+                        console.log(error);
                     })
                 },
                 getCoordinates(position) {
